@@ -1,0 +1,103 @@
+<!-- ===== Ouarzazate Weather Chart (Responsive for Blogspot) ===== -->
+<div class="chart-wrap" style="
+  max-width: 760px; 
+  margin: 24px auto; 
+  padding: 12px; 
+  background:#fff; 
+  border:1px solid #eee; 
+  border-radius:16px; 
+  box-shadow:0 4px 14px rgba(0,0,0,0.06);
+">
+  <!-- This box controls the height responsively (prevents big gaps) -->
+  <div style="position: relative; width: 100%; aspect-ratio: 16 / 9;">
+    <canvas id="ouarzazateChart"></canvas>
+  </div>
+  <p style="text-align:center; margin:10px 0 0; font: 500 14px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Arial;">
+    Ouarzazate — Monthly Climate Overview
+  </p>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const ctx = document.getElementById('ouarzazateChart');
+
+  // 👉 Replace the values below with your real data
+  // Example data (°C): average highs & lows by month
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const avgHigh = [17, 19, 23, 27, 31, 34, 35.4, 35, 30, 25, 20, 17]; // edit as needed
+  const avgLow  = [3.3, 5, 8, 11, 15, 19, 23.1, 22, 18, 12, 7, 4];     // edit as needed
+  // Optional: rainfall (mm). If you don’t want it, set showRain = false
+  const showRain = true;
+  const rain = [2, 2, 8, 5, 3, 2, 3, 9, 9, 6, 4, 3]; // edit as needed
+
+  const datasets = [
+    {
+      label: 'Avg High (°C)',
+      data: avgHigh,
+      borderWidth: 2,
+      tension: 0.3,
+      yAxisID: 'yTemp',
+      pointRadius: 2
+    },
+    {
+      label: 'Avg Low (°C)',
+      data: avgLow,
+      borderWidth: 2,
+      tension: 0.3,
+      yAxisID: 'yTemp',
+      pointRadius: 2
+    }
+  ];
+
+  if (showRain) {
+    datasets.push({
+      type: 'bar',
+      label: 'Rainfall (mm)',
+      data: rain,
+      yAxisID: 'yRain',
+      borderWidth: 1
+    });
+  }
+
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false, // lets the aspect-ratio container control height
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: {
+          label: function(context) {
+            const lbl = context.dataset.label || '';
+            const val = context.parsed.y;
+            return context.dataset.yAxisID === 'yRain' ? `${lbl}: ${val} mm` : `${lbl}: ${val} °C`;
+          }
+        }}
+      },
+      scales: {
+        yTemp: {
+          position: 'left',
+          title: { display: true, text: 'Temperature (°C)' },
+          grid: { drawOnChartArea: true }
+        },
+        // Hidden if you disable rainfall
+        yRain: showRain ? {
+          position: 'right',
+          title: { display: true, text: 'Rainfall (mm)' },
+          grid: { drawOnChartArea: false }
+        } : undefined,
+        x: { title: { display: false } }
+      },
+      elements: {
+        line: { borderJoinStyle: 'round' },
+        point: { hitRadius: 10, hoverRadius: 5 }
+      }
+    }
+  });
+});
+</script>
